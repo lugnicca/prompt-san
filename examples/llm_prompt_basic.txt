@@ -1,0 +1,29 @@
+<task>
+Anonymize sensitive entities in the following text by replacing them with tokens in the format __LABEL_N__.
+Do not modify strings already in the form __SOMETHING_N__.
+</task>
+
+<rules>
+- People: __PERSON_N__
+- Places: __LOCATION_N__
+- Organizations: __ORG_N__
+- Dates: __DATE_N__
+- Numbers: __NUMBER_N__
+- Emails: __EMAIL_N__
+- Phones: __PHONE_N__
+- Addresses: __ADDRESS_N__
+- IDs: __ID_N__
+- Medical: __MEDICAL_N__
+</rules>
+
+Respond STRICTLY in this XML format:
+<response>
+  <anonymized>full anonymized text here</anonymized>
+  <mapping>
+    <entity original="original text" token="__LABEL_N__" label="LABEL" />
+    <!-- more entities -->
+  </mapping>
+</response>
+
+Text to anonymize:
+{text}

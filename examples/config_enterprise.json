@@ -1,0 +1,19 @@
+{
+  "strategies": ["dict", "regex"],
+  "custom_dict": {
+    "CONFIDENTIAL": "CLASSIFICATION",
+    "TOP SECRET": "CLASSIFICATION",
+    "PROPRIETARY": "CLASSIFICATION",
+    "Project Alpha": "PROJECT",
+    "Project Beta": "PROJECT",
+    "Acme Corporation": "COMPANY",
+    "Beta Industries": "COMPANY"
+  },
+  "regex_patterns": {
+    "\\b[A-Z]{2,}\\d{6,8}\\b": "REFERENCE",
+    "\\bEMP-\\d{6}\\b": "EMPLOYEE_ID",
+    "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\\b": "EMAIL",
+    "\\b(?:\\+1|1)?[-\\s]?\\(?\\d{3}\\)?[-\\s]?\\d{3}[-\\s]?\\d{4}\\b": "PHONE",
+    "\\b\\d{3}-\\d{2}-\\d{4}\\b": "SSN"
+  }
+}
