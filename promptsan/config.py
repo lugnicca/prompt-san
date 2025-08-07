@@ -49,6 +49,9 @@ class SanConfig:
     })
     llm_base_url: str = "http://localhost:1234/v1"
     llm_prompt_template: str | None = None
+    # Options for dict_strategy
+    dict_use_word_boundaries: bool = True
+    dict_case_insensitive: bool = False
 
     def validate(self):
         """

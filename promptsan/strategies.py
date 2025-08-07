@@ -9,11 +9,9 @@ Implements pluggable anonymization strategies:
 All strategies follow the AnonymizationStrategy protocol for consistency.
 """
 
-from typing import Protocol, Dict
+from typing import Protocol, Dict, List, Tuple
 import re
 from functools import lru_cache
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, ValidationError
 import xml.etree.ElementTree as ET
 
@@ -39,6 +37,29 @@ class AnonymizationStrategy(Protocol):
         ...
 
 
+def _apply_replacements_non_overlapping(text: str, replacements: List[Tuple[int, int, str]]) -> str:
+    """
+    Apply a list of replacements to the text without overlap.
+
+    replacements: list of tuples (start, end, replacement)
+    Assumes replacements are non-overlapping and sorted by start index.
+    """
+    if not replacements:
+        return text
+
+    result_parts: List[str] = []
+    cursor = 0
+    for start, end, repl in replacements:
+        if start < cursor:
+            # Skip overlapping replacement
+            continue
+        result_parts.append(text[cursor:start])
+        result_parts.append(repl)
+        cursor = end
+    result_parts.append(text[cursor:])
+    return ''.join(result_parts)
+
+
 def regex_strategy(text: str, mapping: MappingStore, cfg: SanConfig) -> str:
     """
     Anonymize text using regular expression patterns
@@ -55,9 +76,23 @@ def regex_strategy(text: str, mapping: MappingStore, cfg: SanConfig) -> str:
         Text with pattern matches replaced by tokens
     """
     for pattern, label in cfg.regex_patterns.items():
-        for match in re.findall(pattern, text):
-            token = mapping.add(match, label)
-            text = text.replace(match, token)
+        # Build all matches with positions, using the full match
+        try:
+            matches = list(re.finditer(pattern, text))
+        except re.error as exc:
+            raise ValueError(f"Invalid regex pattern '{pattern}': {exc}")
+
+        # Convert to non-overlapping replacements (left-to-right)
+        replacements: List[Tuple[int, int, str]] = []
+        for m in matches:
+            full_match = m.group(0)
+            if not full_match:
+                continue
+            token = mapping.add(full_match, label)
+            replacements.append((m.start(), m.end(), token))
+
+        if replacements:
+            text = _apply_replacements_non_overlapping(text, replacements)
     return text
 
 
@@ -77,10 +112,29 @@ def dict_strategy(text: str, mapping: MappingStore, cfg: SanConfig) -> str:
     Returns:
         Text with dictionary matches replaced by tokens
     """
+    use_word_boundaries = getattr(cfg, 'dict_use_word_boundaries', True)
+    case_insensitive = getattr(cfg, 'dict_case_insensitive', False)
+
+    flags = re.IGNORECASE if case_insensitive else 0
+    replacements: List[Tuple[int, int, str]] = []
+
+    # Collect all occurrences for all entities, then apply non-overlapping
     for entity, label in cfg.custom_dict.items():
-        if entity in text:
-            token = mapping.add(entity, label)
-            text = text.replace(entity, token)
+        if not entity:
+            continue
+        escaped = re.escape(entity)
+        if use_word_boundaries:
+            pattern = rf"\b{escaped}\b"
+        else:
+            pattern = escaped
+
+        for m in re.finditer(pattern, text, flags):
+            token = mapping.add(m.group(0), label)
+            replacements.append((m.start(), m.end(), token))
+
+    # Sort by start index to apply deterministically
+    replacements.sort(key=lambda r: r[0])
+    text = _apply_replacements_non_overlapping(text, replacements)
     return text
 
 
@@ -99,7 +153,7 @@ class LLMOutput(BaseModel):
 
 
 @lru_cache(maxsize=2)
-def _load_llm(model_id: str, base_url: str) -> ChatOpenAI:
+def _load_llm(model_id: str, base_url: str):
     """
     Load and cache LLM client
     
@@ -110,10 +164,13 @@ def _load_llm(model_id: str, base_url: str) -> ChatOpenAI:
     Returns:
         Configured ChatOpenAI client
     """
+    # Import locally to make langchain an optional dependency unless LLM is used
+    from langchain_openai import ChatOpenAI  # type: ignore
+
     return ChatOpenAI(
         model_name=model_id,
         base_url=base_url,
-        api_key="not-needed"  # Local LLM doesn't require real API key
+        api_key="not-needed"  # Local LLM may not require a real API key
     )
 
 
@@ -143,6 +200,9 @@ def llm_strategy(text: str, mapping: MappingStore, cfg: SanConfig, max_retries: 
     if not cfg.llm_prompt_template:
         raise ValueError("LLM prompt template not specified in config")
     
+    # Import locally to avoid mandatory dependency unless used
+    from langchain.prompts import ChatPromptTemplate  # type: ignore
+
     llm = _load_llm(cfg.llm_model, cfg.llm_base_url)
     prompt = ChatPromptTemplate.from_template(cfg.llm_prompt_template)
     
