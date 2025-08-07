@@ -13,8 +13,8 @@ Basic usage:
     >>> print(restored)  # "Keanu Reeves lives at john@email.com"
 """
 
-from .sanitizer import PromptSanitizer, AnonymizeResult
 from .config import SanConfig, StrategyName
+from .sanitizer import AnonymizeResult, PromptSanitizer
 
 __version__ = "1.0.1"
 __author__ = "Lugnicca"

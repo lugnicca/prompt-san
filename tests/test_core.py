@@ -49,7 +49,7 @@ def test_deanonymize_roundtrip():
 def test_streaming_deanonymize():
     sanitizer = PromptSanitizer()
     mapping = {"John": "__PERSON_1__"}
-    chunks = ["Hello __PER", "SON_1__!" ]
+    chunks = ["Hello __PER", "SON_1__!"]
 
     def gen():
         for c in chunks:
@@ -57,5 +57,3 @@ def test_streaming_deanonymize():
 
     out = "".join(sanitizer.deanonymize_stream(gen(), mapping))
     assert out == "Hello John!"
-
-

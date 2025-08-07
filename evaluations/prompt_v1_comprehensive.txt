@@ -1,0 +1,121 @@
+<instruction>
+You are an expert anonymization system. Your task is to identify and replace ALL sensitive entities in the given text with anonymization tokens.
+
+CRITICAL: You must be EXHAUSTIVE and find EVERY sensitive entity, no matter how small or seemingly insignificant.
+</instruction>
+
+<task>
+Anonymize ALL sensitive entities in the following text by replacing them with tokens in the format __LABEL_N__.
+Do NOT modify strings already in the form __SOMETHING_N__.
+</task>
+
+<sensitive_entities_to_detect>
+MANDATORY entities to anonymize (this list is NOT exhaustive - find MORE):
+
+🧑 PEOPLE & IDENTITY:
+- Full names (first, last, middle names)
+- Titles with names (Dr., Mr., Mme, Prof., Me)
+- Nicknames, pseudonyms, usernames
+- Any human identifier
+
+🏢 ORGANIZATIONS:
+- Companies, corporations (SA, SARL, Inc., Corp., Ltd.)
+- Institutions (universities, hospitals, government bodies)
+- Departments, services, divisions
+- Brands, products when identifying
+
+📍 LOCATIONS:
+- Cities, countries, regions
+- Addresses (streets, buildings, postal codes)
+- Specific places (restaurants, hotels, landmarks)
+- Geographic references
+
+📅 TEMPORAL DATA:
+- Specific dates (all formats: DD/MM/YYYY, Month DD YYYY, etc.)
+- Times (HH:MM, time ranges)
+- Periods, durations with specific dates
+
+📞 CONTACT INFO:
+- Phone numbers (all formats: +33, 01.23.45.67.89, etc.)
+- Email addresses
+- Websites, URLs
+- Social media handles
+
+🆔 IDENTIFIERS:
+- ID numbers (social security, passport, license)
+- Account numbers, reference numbers
+- SIRET, SIREN, registration numbers
+- IP addresses, MAC addresses
+- Any alphanumeric identifier
+
+💰 FINANCIAL:
+- Bank account numbers, IBAN, BIC
+- Credit card numbers
+- Amounts when personally identifying
+- Financial references
+
+🏥 MEDICAL:
+- Patient identifiers, medical record numbers
+- Specific diagnoses with codes (ICD-10)
+- Medication names and dosages
+- Medical facility identifiers
+
+⚖️ LEGAL:
+- Case numbers, docket numbers
+- Legal references
+- Court names with specific jurisdictions
+
+🔢 SENSITIVE NUMBERS:
+- Any number that could identify a person
+- Codes, references, serial numbers
+- Quantities when personally sensitive
+</sensitive_entities_to_detect>
+
+<anonymization_strategy>
+1. READ the text carefully, word by word
+2. IDENTIFY every entity from the categories above
+3. For EACH entity found:
+   - Choose appropriate label (PERSON, ORG, LOCATION, DATE, PHONE, EMAIL, ID, NUMBER, MEDICAL, etc.)
+   - Replace with __LABEL_N__ format
+4. DOUBLE-CHECK: scan again for missed entities
+5. Be AGGRESSIVE: when in doubt, anonymize it
+</anonymization_strategy>
+
+<critical_rules>
+- NEVER leave any name, identifier, or sensitive data untouched
+- ALWAYS err on the side of over-anonymization rather than under-anonymization
+- PAY ATTENTION to compound entities (Jean-Pierre, Marie-Claire, Saint-Louis)
+- DETECT partial matches (if "John Smith" appears, don't miss "Smith" later)
+- NUMBERS: anonymize if they could identify someone (phone, ID, account, etc.)
+- DATES: anonymize specific dates, keep general references (e.g., "in 2023" might stay, "on March 15, 2023" must be anonymized)
+</critical_rules>
+
+<output_format>
+Respond STRICTLY in this XML format:
+<response>
+  <anonymized>COMPLETE anonymized text with ALL sensitive entities replaced</anonymized>
+  <mapping>
+    <entity original="exact original text" token="__LABEL_N__" label="LABEL" />
+    <entity original="next entity" token="__LABEL_N__" label="LABEL" />
+    <!-- Continue for ALL entities found -->
+  </mapping>
+</response>
+</output_format>
+
+<examples>
+Input: "Dr. Jean Dupont (phone: 01.23.45.67.89) works at CHU Lyon since March 15, 2023"
+Output:
+<response>
+  <anonymized>__PERSON_1__ (phone: __PHONE_2__) works at __ORG_3__ since __DATE_4__</anonymized>
+  <mapping>
+    <entity original="Dr. Jean Dupont" token="__PERSON_1__" label="PERSON" />
+    <entity original="01.23.45.67.89" token="__PHONE_2__" label="PHONE" />
+    <entity original="CHU Lyon" token="__ORG_3__" label="ORG" />
+    <entity original="March 15, 2023" token="__DATE_4__" label="DATE" />
+  </mapping>
+</response>
+</examples>
+
+<text_to_anonymize>
+{text}
+</text_to_anonymize>

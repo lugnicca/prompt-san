@@ -1,0 +1,352 @@
+{
+  "models_to_test": [
+    {
+      "name": "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
+      "base_url": "http://localhost:1234/v1",
+      "prompt_template_file": "prompt_v1_comprehensive.txt"
+    },
+    {
+      "name": "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b", 
+      "base_url": "http://localhost:1234/v1",
+      "prompt_template_file": "prompt_v2_systematic.txt"
+    },
+    {
+      "name": "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
+      "base_url": "http://localhost:1234/v1", 
+      "prompt_template_file": "prompt_v3_aggressive.txt"
+    },
+    {
+      "name": "llama-3.2-8x3b-moe-dark-champion-instruct-uncensored-abliterated-18.4b",
+      "base_url": "http://localhost:1234/v1",
+      "prompt_template": "<task>\n  Anonymize sensitive entities in the following text by replacing them with tokens in the format __LABEL_N__.\n  Do not modify strings already in the form __SOMETHING_N__.\n</task>\n\n<non-exhaustive anonymisation rules>\n  - People: __PERSON_N__\n  - Places: __LOCATION_N__\n  - Organizations: __ORG_N__\n  - Dates: __DATE_N__\n  - Numbers: __NUMBER_N__\n  - Emails: __EMAIL_N__\n  - Phones: __PHONE_N__\n  - Addresses: __ADDRESS_N__\n  - IDs: __ID_N__\n  - Medical: __MEDICAL_N__\n</non-exhaustive anonymisation rules>\n\nRespond STRICTLY in this XML format:\n<response>\n  <anonymized>full anonymized text here</anonymized>\n  <mapping>\n    <entity original=\"original text\" token=\"__LABEL_N__\" label=\"LABEL\" />\n    <!-- more entities -->\n  </mapping>\n</response>\n\nThis is the text to anonymise:\n<text to anonymize>{text}</text to anonymize>"
+    }
+  ],
+  "test_cases": [
+    {
+      "id": "easy_01",
+      "level": "easy",
+      "length": "short",
+      "text": "John Smith lives in London.",
+      "expected_entities": {
+        "John Smith": "PERSON",
+        "London": "LOCATION"
+      }
+    },
+    {
+      "id": "easy_02", 
+      "level": "easy",
+      "length": "short",
+      "text": "Google company was founded in 1998.",
+      "expected_entities": {
+        "Google": "ORG",
+        "1998": "DATE"
+      }
+    },
+    {
+      "id": "easy_03",
+      "level": "easy", 
+      "length": "short",
+      "text": "Contact me at 01.23.45.67.89 or by email at john@example.com.",
+      "expected_entities": {
+        "01.23.45.67.89": "PHONE",
+        "john@example.com": "EMAIL"
+      }
+    },
+    {
+      "id": "easy_04",
+      "level": "easy",
+      "length": "short", 
+      "text": "My postal code is 75001 and my birth date is 15/03/1990.",
+      "expected_entities": {
+        "75001": "NUMBER",
+        "15/03/1990": "DATE"
+      }
+    },
+    {
+      "id": "easy_05",
+      "level": "easy",
+      "length": "short",
+      "text": "Dr. Martin Smith works at Saint-Louis Hospital.",
+      "expected_entities": {
+        "Dr. Martin Smith": "PERSON",
+        "Saint-Louis Hospital": "ORG"
+      }
+    },
+    {
+      "id": "medium_01",
+      "level": "medium",
+      "length": "medium",
+      "text": "Marie-Claire Dubois, CEO of TechCorp SA, received us in their offices located at 123 Champs-Élysées Avenue, 75008 Paris, on June 25, 2023 at 2:30 PM.",
+      "expected_entities": {
+        "Marie-Claire Dubois": "PERSON",
+        "TechCorp SA": "ORG",
+        "123 Champs-Élysées Avenue": "ADDRESS",
+        "75008": "NUMBER",
+        "Paris": "LOCATION",
+        "June 25, 2023": "DATE",
+        "2:30 PM": "DATE"
+      }
+    },
+    {
+      "id": "medium_02",
+      "level": "medium", 
+      "length": "medium",
+      "text": "The patient Mr. Jean-Baptiste Rodriguez (born 12/08/1975, social security number 1750812345678) was admitted to the cardiology department of Lyon University Hospital on November 10, 2023.",
+      "expected_entities": {
+        "Mr. Jean-Baptiste Rodriguez": "PERSON",
+        "12/08/1975": "DATE", 
+        "1750812345678": "ID",
+        "Lyon University Hospital": "ORG",
+        "November 10, 2023": "DATE"
+      }
+    },
+    {
+      "id": "medium_03",
+      "level": "medium",
+      "length": "medium", 
+      "text": "ACME Industries company (SIRET: 12345678901234) based in Marseille employs 150 people. Its CEO, Pierre Durand, can be reached at +33 4 91 12 34 56.",
+      "expected_entities": {
+        "ACME Industries": "ORG",
+        "12345678901234": "ID",
+        "Marseille": "LOCATION", 
+        "150": "NUMBER",
+        "Pierre Durand": "PERSON",
+        "+33 4 91 12 34 56": "PHONE"
+      }
+    },
+    {
+      "id": "medium_04",
+      "level": "medium",
+      "length": "medium",
+      "text": "The contract signed by Mrs. Sophie Martin on January 15, 2024 provides for an annual salary of €45,000. She will work for Amazon's French subsidiary located in Clichy.",
+      "expected_entities": {
+        "Mrs. Sophie Martin": "PERSON",
+        "January 15, 2024": "DATE",
+        "€45,000": "NUMBER",
+        "Amazon": "ORG",
+        "Clichy": "LOCATION"
+      }
+    },
+    {
+      "id": "medium_05",
+      "level": "medium",
+      "length": "medium",
+      "text": "Lawyer François Leclerc (Paris Bar, tel: 01.42.86.15.23) represents Innovtech company in the case opposing the latter to Microsoft Corp.",
+      "expected_entities": {
+        "François Leclerc": "PERSON",
+        "Paris Bar": "ORG",
+        "01.42.86.15.23": "PHONE",
+        "Innovtech": "ORG", 
+        "Microsoft Corp": "ORG"
+      }
+    },
+    {
+      "id": "hard_01",
+      "level": "hard", 
+      "length": "long",
+      "text": "Dr. Jean-Marie de La Fontaine-Dubois, head of the pulmonology department at AP-HP Bichat-Claude Bernard Hospital (46 Henri Huchard Street, 75018 Paris), published a study in The New England Journal of Medicine on March 15, 2024. This research covered 1,247 patients with long COVID, followed between January 2022 and December 2023. The funding of €2.3 million was granted by INSERM (project reference ANR-2021-CE17-0025-01). For more information, contact Dr. de La Fontaine-Dubois at 01.40.25.63.47 or by email at jm.delafontaine@aphp.fr.",
+      "expected_entities": {
+        "Dr. Jean-Marie de La Fontaine-Dubois": "PERSON",
+        "AP-HP Bichat-Claude Bernard Hospital": "ORG",
+        "46 Henri Huchard Street": "ADDRESS",
+        "75018": "NUMBER",
+        "Paris": "LOCATION",
+        "The New England Journal of Medicine": "ORG", 
+        "March 15, 2024": "DATE",
+        "1,247": "NUMBER",
+        "long COVID": "MEDICAL",
+        "January 2022": "DATE",
+        "December 2023": "DATE",
+        "€2.3 million": "NUMBER",
+        "INSERM": "ORG",
+        "ANR-2021-CE17-0025-01": "ID",
+        "01.40.25.63.47": "PHONE",
+        "jm.delafontaine@aphp.fr": "EMAIL"
+      }
+    },
+    {
+      "id": "hard_02",
+      "level": "hard",
+      "length": "long", 
+      "text": "The merger-acquisition between Schneider Electric SA (ISIN code FR0000121972, market capitalization €89.4 billion) and the American startup EcoTech Solutions Inc. (valued at $450M during the Series C round in September 2023) was finalized on October 18, 2024. Schneider's CEO, Jean-Pascal Tricoire, and EcoTech's founder, Dr. Sarah Chen-Williams (MIT graduate 2015, former VP Innovation at Tesla), signed the agreement at the Paris headquarters (35 Joseph Monier Street, 92500 Rueil-Malmaison). The operation, advised by Goldman Sachs and Lazard, involves a transfer of 2,847 technological patents and the integration of 340 engineers into European R&D teams by the end of Q2 2025.",
+      "expected_entities": {
+        "Schneider Electric SA": "ORG",
+        "FR0000121972": "ID",
+        "€89.4 billion": "NUMBER",
+        "EcoTech Solutions Inc.": "ORG",
+        "$450M": "NUMBER",
+        "September 2023": "DATE",
+        "October 18, 2024": "DATE",
+        "Jean-Pascal Tricoire": "PERSON",
+        "Dr. Sarah Chen-Williams": "PERSON",
+        "MIT": "ORG",
+        "2015": "DATE",
+        "Tesla": "ORG",
+        "35 Joseph Monier Street": "ADDRESS",
+        "92500": "NUMBER",
+        "Rueil-Malmaison": "LOCATION",
+        "Goldman Sachs": "ORG",
+        "Lazard": "ORG",
+        "2,847": "NUMBER",
+        "340": "NUMBER",
+        "Q2 2025": "DATE"
+      }
+    },
+    {
+      "id": "hard_03",
+      "level": "hard",
+      "length": "long",
+      "text": "The judicial investigation conducted by Investigating Judge Mrs. Élisabeth Caron-Dupuis of the Nanterre High Court concerns alleged accounting irregularities at BioMed Pharma (public limited company with capital of €125M, registered under number 552 088 117 RCS Nanterre). The case involves Financial Director Mr. Alain Rousseau (residing at 78 Voltaire Boulevard, 75011 Paris, mobile 06.78.92.15.43), suspected of embezzling public funds between 2019 and 2023. The investigations concern European subsidies (Horizon 2020 program, contract no. 875432-BIOINNOV-H2020) totaling €8.7 million, paid for the development of an Alzheimer's disease treatment. The chartered accountant appointed by the court, Vincent Leblanc from PwC France, identified anomalies in 47 accounting entries dated between May 12, 2021 and November 8, 2023.",
+      "expected_entities": {
+        "Mrs. Élisabeth Caron-Dupuis": "PERSON",
+        "Nanterre High Court": "ORG",
+        "BioMed Pharma": "ORG",
+        "€125M": "NUMBER",
+        "552 088 117 RCS Nanterre": "ID",
+        "Mr. Alain Rousseau": "PERSON",
+        "78 Voltaire Boulevard": "ADDRESS",
+        "75011": "NUMBER",
+        "Paris": "LOCATION",
+        "06.78.92.15.43": "PHONE",
+        "2019": "DATE",
+        "2023": "DATE",
+        "Horizon 2020": "ORG",
+        "875432-BIOINNOV-H2020": "ID",
+        "€8.7 million": "NUMBER",
+        "Alzheimer's disease": "MEDICAL",
+        "Vincent Leblanc": "PERSON",
+        "PwC France": "ORG",
+        "47": "NUMBER",
+        "May 12, 2021": "DATE",
+        "November 8, 2023": "DATE"
+      }
+    },
+    {
+      "id": "mixed_entities_01",
+      "level": "hard",
+      "length": "medium",
+      "text": "GDPR requires companies to protect personal data such as IBANs (FR76 1234 5678 9012 3456 789), passport numbers (18AB12345), and IP addresses (192.168.1.100).",
+      "expected_entities": {
+        "GDPR": "ORG",
+        "FR76 1234 5678 9012 3456 789": "ID",
+        "18AB12345": "ID", 
+        "192.168.1.100": "ID"
+      }
+    },
+    {
+      "id": "mixed_entities_02",
+      "level": "medium",
+      "length": "medium",
+      "text": "Following the accident on 23/12/2023 at 3:42 PM on the A6 highway, Mrs. Catherine Roussel (license B no. 123456789012) was transported to the emergency room by firefighters (intervention no. UG-2023-456789).",
+      "expected_entities": {
+        "23/12/2023": "DATE",
+        "3:42 PM": "DATE",
+        "A6": "LOCATION",
+        "Mrs. Catherine Roussel": "PERSON",
+        "123456789012": "ID",
+        "UG-2023-456789": "ID"
+      }
+    },
+    {
+      "id": "ambiguous_01",
+      "level": "hard",
+      "length": "medium", 
+      "text": "Apple announced that Tim Cook will meet Emmanuel Macron at the Élysée Palace to discuss Apple France's investment in French Tech.",
+      "expected_entities": {
+        "Apple": "ORG",
+        "Tim Cook": "PERSON",
+        "Emmanuel Macron": "PERSON",
+        "Élysée Palace": "LOCATION",
+        "Apple France": "ORG",
+        "French Tech": "ORG"
+      }
+    },
+    {
+      "id": "medical_01",
+      "level": "hard",
+      "length": "medium",
+      "text": "Patient John Doe (NH: 1234567890) presents arterial hypertension (ICD-10: I10) and type 2 diabetes (ICD-10: E11). Treatment: Metformin 500mg 2x/day.",
+      "expected_entities": {
+        "John Doe": "PERSON",
+        "1234567890": "ID",
+        "arterial hypertension": "MEDICAL",
+        "I10": "MEDICAL",
+        "type 2 diabetes": "MEDICAL", 
+        "E11": "MEDICAL",
+        "Metformin": "MEDICAL",
+        "500mg": "MEDICAL"
+      }
+    },
+    {
+      "id": "financial_01",
+      "level": "hard",
+      "length": "medium",
+      "text": "Bank account no. 30004 12345 67890123456 78 (BIC: BNPAFRPPXXX) of Mr. Pierre Martin shows a balance of -€2,547.83 since the SEPA transfer of 15/11/2023.",
+      "expected_entities": {
+        "30004 12345 67890123456 78": "ID",
+        "BNPAFRPPXXX": "ID",
+        "Mr. Pierre Martin": "PERSON",
+        "-€2,547.83": "NUMBER",
+        "15/11/2023": "DATE"
+      }
+    },
+    {
+      "id": "legal_01", 
+      "level": "hard",
+      "length": "medium",
+      "text": "The Court of Cassation ruling no. 22-15.234 of February 14, 2024 overturns the Lyon High Court judgment rendered on June 8, 2023 in the Martin v. Dupuis case.",
+      "expected_entities": {
+        "Court of Cassation": "ORG",
+        "22-15.234": "ID",
+        "February 14, 2024": "DATE",
+        "Lyon High Court": "ORG",
+        "June 8, 2023": "DATE",
+        "Martin": "PERSON",
+        "Dupuis": "PERSON"
+      }
+    },
+    {
+      "id": "academic_01",
+      "level": "medium",
+      "length": "medium",
+      "text": "Miss Sarah Johnson's doctoral thesis (University of Cambridge, supervisor: Prof. Robert Wilson) on quantum AI will be defended on April 12, 2024 at 2 PM, Darwin lecture hall.",
+      "expected_entities": {
+        "Miss Sarah Johnson": "PERSON",
+        "University of Cambridge": "ORG",
+        "Prof. Robert Wilson": "PERSON",
+        "April 12, 2024": "DATE",
+        "2 PM": "DATE",
+        "Darwin lecture hall": "LOCATION"
+      }
+    },
+    {
+      "id": "international_01",
+      "level": "medium", 
+      "length": "medium",
+      "text": "President Biden will meet Xi Jinping during the G20 summit in Bali, Indonesia, to discuss USA-China relations and the Ukrainian conflict.",
+      "expected_entities": {
+        "Biden": "PERSON",
+        "Xi Jinping": "PERSON",
+        "G20": "ORG",
+        "Bali": "LOCATION",
+        "Indonesia": "LOCATION",
+        "USA": "LOCATION",
+        "China": "LOCATION"
+      }
+    },
+    {
+      "id": "tech_01",
+      "level": "medium",
+      "length": "medium", 
+      "text": "The nginx server (IP: 203.0.113.45, port 443) hosted on AWS EC2 (instance i-0abcd1234efgh5678) generated the SSL certificate expired error on 25/10/2023 at 03:17 UTC.",
+      "expected_entities": {
+        "203.0.113.45": "ID",
+        "443": "NUMBER",
+        "AWS": "ORG",
+        "i-0abcd1234efgh5678": "ID",
+        "25/10/2023": "DATE",
+        "03:17 UTC": "DATE"
+      }
+    }
+  ]
+}
