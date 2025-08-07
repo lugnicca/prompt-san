@@ -25,8 +25,8 @@ from typing import Generator
 
 # Configuration constants
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-API_KEY = 'YOUR_OPENROUTER_API_KEY'
-MODEL = "mistralai/devstral-small"
+API_KEY = os.getenv('OPENAI_API_KEY', '').strip()
+MODEL = os.getenv('OPENROUTER_MODEL', "mistralai/devstral-small")
 
 def main():
     print("PromptSan - Real LLM Integration Example (OpenRouter)")
@@ -34,7 +34,7 @@ def main():
     
     # Check for API key
     if not API_KEY:
-        print("set your OpenRouter API key in the API_KEY variable")
+        print("Please set your OpenRouter API key in the OPENAI_API_KEY environment variable.")
         return
 
     print("✓ OpenRouter API key found")
