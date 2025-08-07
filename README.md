@@ -4,7 +4,7 @@
 
 PromptSan is a little library for anonymizing and deanonymizing text with pluggable strategies. It supports regex patterns, custom dictionaries, LLM-based anonymization, and streaming deanonymization.
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -12,7 +12,7 @@ PromptSan is a little library for anonymizing and deanonymizing text with plugga
 - **Multiple Strategies**: Regex, dictionary, and LLM-based anonymization
 - **Streaming Support**: Real-time deanonymization for LLM outputs
 - **Extensible**: Easy to add custom anonymization strategies
-- **Type-Safe**: Full type hints and Pydantic validation
+ - **Type-Safe**: Full type hints and Pydantic validation
 - **Minimal**: Only 5 core files, clean architecture
 - **LLM Integration**: Local LLM support via LangChain
 - **Streaming**: Generator-based streaming deanonymization
@@ -27,15 +27,15 @@ pip install promptsan
 ### From Source
 ```bash
 git clone https://github.com/lugnicca/prompt-san.git
-cd promptsan
+cd prompt-san
 pip install -e .
 ```
 
 ### Development Installation
 ```bash
 git clone https://github.com/lugnicca/prompt-san.git
-cd promptsan
-pip install -e ".[dev]"
+cd prompt-san
+python -m pip install -e ".[dev]"
 ```
 
 ## Quick Start
@@ -207,6 +207,9 @@ promptsan stream-deanonymize --input-file stream.txt --mapping-file mapping.json
 
 # Use custom configuration
 promptsan --config examples/config_medical.json anonymize --input-file patient_data.txt
+
+# JSON output (text and mapping)
+promptsan anonymize --text "Email: a@b.com" --json
 ```
 
 ## Configuration Files
@@ -317,7 +320,7 @@ python examples/example_llm_integration.py  # Requires local LLM
 
 ## 📋 Requirements
 
-- Python 3.8+
+- Python 3.10+
 - pydantic >= 2.0.0
 - langchain >= 0.1.0 (for LLM strategy)
 - langchain-openai >= 0.0.5 (for LLM strategy)
