@@ -35,16 +35,21 @@ def main():
     anon_parser.add_argument("--input-file", type=str, help="Input file path")
     anon_parser.add_argument("--output-file", type=str, help="Output file for anonymized text")
     anon_parser.add_argument("--mapping-file", type=str, help="Output file for mapping JSON")
-    anon_parser.add_argument("--strategies", type=str, default="regex,dict,llm", 
-                           help="Comma-separated strategies")
+    anon_parser.add_argument("--strategies", type=str, default=None,
+                           help="Comma-separated strategies (override config)")
     anon_parser.add_argument("--custom-dict", type=str, default='{}', 
                            help="JSON dict for custom replacements")
+    anon_parser.add_argument("--dict-case-insensitive", action="store_true",
+                           help="Dictionary strategy: case-insensitive matching")
+    anon_parser.add_argument("--dict-no-word-boundaries", action="store_true",
+                           help="Dictionary strategy: disable word boundary anchors")
     anon_parser.add_argument("--llm-model", type=str, default="dolphin3.0-llama3.1-8b", 
                            help="LLM model name")
     anon_parser.add_argument("--llm-base-url", type=str, default="http://localhost:1234/v1", 
                            help="LLM base URL")
     anon_parser.add_argument("--llm-prompt-template", type=str, 
                            help="Custom LLM prompt template")
+    anon_parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
 
     # Deanonymize command
     deanon_parser = subparsers.add_parser("deanonymize", help="Deanonymize text")
@@ -109,34 +114,40 @@ def _handle_anonymize(args, base_config: SanConfig):
     except json.JSONDecodeError:
         raise ValueError("Invalid JSON for --custom-dict")
 
-    # Override config with CLI arguments (only if not default values)
+    # Override config with CLI arguments (only if explicitly set)
     config = SanConfig(
-        strategies=args.strategies.split(",") if args.strategies != "regex,dict,llm" else base_config.strategies,
+        strategies=args.strategies.split(",") if args.strategies else base_config.strategies,
         llm_model=args.llm_model if args.llm_model != "dolphin3.0-llama3.1-8b" else base_config.llm_model,
         custom_dict=custom_dict if args.custom_dict != '{}' else base_config.custom_dict,
         regex_patterns=base_config.regex_patterns,
         llm_base_url=args.llm_base_url if args.llm_base_url != "http://localhost:1234/v1" else base_config.llm_base_url,
-        llm_prompt_template=args.llm_prompt_template if args.llm_prompt_template else base_config.llm_prompt_template
+        llm_prompt_template=args.llm_prompt_template if args.llm_prompt_template else base_config.llm_prompt_template,
+        dict_case_insensitive=args.dict_case_insensitive or getattr(base_config, 'dict_case_insensitive', False),
+        dict_use_word_boundaries=not args.dict_no_word_boundaries if args.dict_no_word_boundaries else getattr(base_config, 'dict_use_word_boundaries', True),
     )
 
     # Anonymize
     sanitizer = PromptSanitizer(config)
     result = sanitizer.anonymize(text)
 
-    # Output anonymized text
-    if args.output_file:
-        with open(args.output_file, 'w', encoding='utf-8') as f:
-            f.write(result.text)
+    # Output
+    if args.json:
+        output_obj = {"text": result.text, "mapping": result.mapping}
+        print(json.dumps(output_obj, ensure_ascii=False))
     else:
-        print(result.text)
+        if args.output_file:
+            with open(args.output_file, 'w', encoding='utf-8') as f:
+                f.write(result.text)
+        else:
+            print(result.text)
 
-    # Output mapping
-    mapping_json = json.dumps(result.mapping, indent=2)
-    if args.mapping_file:
-        with open(args.mapping_file, 'w', encoding='utf-8') as f:
-            f.write(mapping_json)
-    elif not args.output_file:  # Only print mapping if not writing to file
-        print("Mapping:", mapping_json, file=sys.stderr)
+        # Output mapping
+        mapping_json = json.dumps(result.mapping, indent=2)
+        if args.mapping_file:
+            with open(args.mapping_file, 'w', encoding='utf-8') as f:
+                f.write(mapping_json)
+        elif not args.output_file and args.verbose:
+            print("Mapping:", mapping_json, file=sys.stderr)
 
 
 def _handle_deanonymize(args):
