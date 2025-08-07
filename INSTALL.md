@@ -9,8 +9,8 @@
 git clone https://github.com/lugnicca/prompt-san.git
 cd prompt-san
 
-# Install dependencies (Python 3.10+)
-python -m pip install -r requirements.txt
+# Install package (Python 3.10+)
+python -m pip install -e .
 
 # Test the installation
 python - <<'PY'
@@ -146,7 +146,7 @@ PY
 ### Permission Error (Windows)
 ```bash
 # Run as administrator or use --user flag
-python -m pip install --user -r requirements.txt
+python -m pip install --user -e .
 ```
 
 ## Verification
