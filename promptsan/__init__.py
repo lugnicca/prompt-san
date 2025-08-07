@@ -16,7 +16,7 @@ Basic usage:
 from .sanitizer import PromptSanitizer, AnonymizeResult
 from .config import SanConfig, StrategyName
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Lugnicca"
 __email__ = "lugnicca@gmail.com"
 
