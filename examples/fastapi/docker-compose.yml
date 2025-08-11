@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: examples/fastapi/Dockerfile
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
