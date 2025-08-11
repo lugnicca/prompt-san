@@ -175,7 +175,7 @@ def _load_llm(model_id: str, base_url: str) -> Any:
     client = ChatOpenAI(
         model=model_id,
         base_url=base_url,
-        api_key=None,
+        api_key="not-needed",
     )
     return client
 
